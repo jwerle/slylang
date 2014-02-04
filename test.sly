@@ -1,0 +1,17 @@
+/**
+ * `test.sly'
+ */
+
+define NAME "joe";
+
+let main (argc, argv) {
+  var name = "joe";
+  print(name);
+
+  let noop () {}
+  return 0;
+}
+
+let print (str) {
+  write(stdout, str);
+}
