@@ -2,16 +2,28 @@
  * `test.sly'
  */
 
+import {stdin, stdout} in "stdio";
+
 define NAME "joe";
 
-let main (argc, argv) {
+export let void
+main (argc, argv) {
   var name = "joe";
   print(name);
-
+  for (var i = 0; i < argc; ++i) {
+    print(argv[i]);
+  }
   let noop () {}
   return 0;
 }
 
-let print (str) {
-  write(stdout, str);
+let void
+print (str) {
+  fwrite(stdout, str);
+  fwrite(stdout, "\n");
+}
+
+let void Buffer
+read () {
+  return fread(stdin);
 }

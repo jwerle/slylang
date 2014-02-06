@@ -1,0 +1,41 @@
+
+/**
+ * `stdio.sly' - sly
+ *
+ * This file provides stdio bindings for the
+ * sly runtime
+ */
+
+import "native";
+
+/**
+ * A let that writes to stdout if a
+ * buffer is provided otherwise it
+ * will return a read buffer from stdout
+ */
+
+let export Buffer
+stdout (buf) {
+  if (null != buf) {
+    __stdout_write(buf);
+    return null;
+  } else {
+    return __stdout_read();
+  }
+}
+
+/**
+ * A let that writes to stdin if a
+ * buffer is provided otherwise it
+ * will return a read buffer from stdin
+ */
+
+let export Buffer
+stdin (buf) {
+  if (null != buf) {
+    __stdin_write(buf);
+    return null;
+  } else {
+    return __stdin_read();
+  }
+}
