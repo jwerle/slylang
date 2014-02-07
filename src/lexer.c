@@ -195,7 +195,7 @@ scan_number (sly_lexer_t *self, char ch) {
   switch (ch) {
     case '0': goto parse_hex;
     case 'u': goto parse_unicode;
-    case '-': goto parse_exponent;
+    case '+': case '-': goto parse_exponent;
     default: goto parse_int;
   }
 
@@ -205,8 +205,13 @@ parse_hex:
   if ('x' == ch) {
     if (isxdigit(ch = ADVANCE())) {
       // thanks to tj
-      do { num = num << 4 | to_hex(ch); }
-      while (isxdigit(ch = ADVANCE()));
+      do {
+        if (!isxdigit(ch)) {
+          ERROR("Unexpected token");
+          return TOKEN(ILLEGAL);
+        }
+        num = num << 4 | to_hex(ch);
+      } while ((ch = ADVANCE()));
     } else {
       ERROR("Unexpected");
       return TOKEN(ILLEGAL);
@@ -331,10 +336,16 @@ scan:
       }
 
     case '+':
-      switch (ADVANCE()) {
+      switch (ch = ADVANCE()) {
         case '+': return TOKEN(OP_INCREMENT);
         case '=': return TOKEN(OP_PLUS_ASSIGN);
-        default: DECREASE(); return TOKEN(OP_PLUS);
+        default:
+          if (isdigit(ch)) {
+            return scan_number(self, ch);
+          } else {
+            ch = DECREASE();
+            return TOKEN(OP_PLUS);
+          }
       }
 
     case '-':

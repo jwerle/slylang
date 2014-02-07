@@ -140,6 +140,18 @@ TEST(lexer) {
   t(lexer);
   t(SLY_TOKEN_FLOAT == sly_lexer_scan(lexer));
 
+  lexer = sly_lexer_new("test", "-0x00000004");
+  t(lexer);
+  t(SLY_TOKEN_HEX == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "+0x0008");
+  t(lexer);
+  t(SLY_TOKEN_HEX == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "-0x04.0");
+  t(lexer);
+  t(SLY_TOKEN_ILLEGAL == sly_lexer_scan(lexer));
+
   lexer = sly_lexer_new("test", "64.12345");
   t(lexer);
   t(SLY_TOKEN_FLOAT == sly_lexer_scan(lexer));
