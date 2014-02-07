@@ -6,6 +6,7 @@
 #ifndef SLY_LEXER_H
 #define SLY_LEXER_H 1
 
+#include <stdio.h>
 #include "common.h"
 #include "token.h"
 
@@ -19,9 +20,9 @@ typedef struct sly_lexer_s {
   char *source;
   char buf[SLY_LEXER_MAX_BUF_SIZE];
   char last;
+  off_t offset;
   int lineno;
   int col;
-  int offset;
   int has_error;
   sly_token_t token;
 } sly_lexer_t;
@@ -36,5 +37,8 @@ sly_lexer_new (const char *, char *);
 
 SLY_EXTERN int
 sly_lexer_scan (sly_lexer_t *);
+
+SLY_EXTERN void
+sly_lexer_reset (sly_lexer_t *);
 
 #endif

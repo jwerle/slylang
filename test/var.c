@@ -14,7 +14,7 @@
 TEST(var) {
   sly_var_t *var = sly_var_new(sly_value_new((void *)32));
   t(var);
-  printf("%d\n", sly_var_value(var)->as_int);
+  t(32 == sly_var_value(var)->as_int);
   ok("var");
   return 0;
 }

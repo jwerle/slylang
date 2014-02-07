@@ -34,4 +34,6 @@ static int TESTS_FAILED;
 TEST(value);
 TEST(var);
 
+TEST(lexer);
+
 #endif

@@ -14,6 +14,8 @@ main (void) {
   RUN(value);
   RUN(var);
 
+  RUN(lexer);
+
   ok_done();
   return 0;
 }

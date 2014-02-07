@@ -13,9 +13,9 @@
  */
 
 #define SLY_TOKENS                                \
-  X(ILLEGAL, "identifier")                        \
+  X(ILLEGAL, "illegal")                           \
   X(EOF, "eof")                                   \
-  X(IDENTIFIER, "illegal")                        \
+  X(IDENTIFIER, "identifier")                     \
   X(UNDEFINED, "undefined")                       \
   X(NULL, "null")                                 \
   X(UNDEFINE, "undefine")                         \
@@ -29,6 +29,7 @@
   X(WHILE, "while")                               \
   X(SWITCH, "switch")                             \
   X(CASE, "case")                                 \
+  X(BREAK, "break")                               \
   X(DEFAULT, "default")                           \
   X(IF, "if")                                     \
   X(ELSE, "else")                                 \
@@ -39,7 +40,8 @@
   X(TYPEOF, "typeof")                             \
   X(STRING, "string")                             \
   X(INT, "int")                                   \
-  X(BUFFER, "buffer")                             \
+  X(FLOAT, "float")                               \
+  X(HEX, "hex")                                   \
   X(LBRACE, "{")                                  \
   X(RBRACE, "}")                                  \
   X(LBRACKET, "[")                                \
