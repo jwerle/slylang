@@ -42,6 +42,7 @@
   X(INT, "int")                                   \
   X(FLOAT, "float")                               \
   X(HEX, "hex")                                   \
+  X(UNICODE, "unicode")                           \
   X(LBRACE, "{")                                  \
   X(RBRACE, "}")                                  \
   X(LBRACKET, "[")                                \
@@ -80,7 +81,7 @@
   X(OP_BITWISE_NOT, "~")                          \
   X(OP_BITWISE_SHIFT_LEFT, "<<")                  \
   X(OP_BITWISE_SHIFT_RIGHT, ">>")                 \
-  X(OP_BITWISE_UNSIGHED_SHIFT_RIGHT, ">>>")       \
+  X(OP_BITWISE_UNSIGNED_SHIFT_RIGHT, ">>>")       \
 
 /**
  * Token enum type

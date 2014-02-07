@@ -112,9 +112,41 @@ TEST(lexer) {
   t(lexer);
   t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
 
+  lexer = sly_lexer_new("test", "-32");
+  t(lexer);
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "00000001");
+  t(lexer);
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "10e10");
+  t(lexer);
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "20E50");
+  t(lexer);
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "0.45e99");
+  t(lexer);
+  t(SLY_TOKEN_FLOAT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "-123E456");
+  t(lexer);
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "-123.456E789");
+  t(lexer);
+  t(SLY_TOKEN_FLOAT == sly_lexer_scan(lexer));
+
   lexer = sly_lexer_new("test", "64.12345");
   t(lexer);
   t(SLY_TOKEN_FLOAT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "0x4f");
+  t(lexer);
+  t(SLY_TOKEN_HEX == sly_lexer_scan(lexer));
 
   ok("lexer");
   return 0;

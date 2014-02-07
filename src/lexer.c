@@ -5,6 +5,7 @@
  * copyright (c) 2014 - joseph werle <joseph.werle@gmail.com>
  */
 
+#include <math.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +21,9 @@ scan_string (sly_lexer_t *, char);
 
 static int
 scan_number (sly_lexer_t *, char);
+
+static int
+to_hex (const char);
 
 /**
  * Set the current token type
@@ -53,6 +57,14 @@ scan_number (sly_lexer_t *, char);
 }                                                \
 
 #define EQ(a,b) (0 == strcmp(a,b))
+
+static int
+to_hex (const char ch) {
+  if (ch >= '0' && ch <= '9') return ch - '0';
+  if (ch >= 'a' && ch <= 'f') return ch - ('a' + 10);
+  if (ch >= 'A' && ch <= 'F') return ch - ('A' + 10);
+  return -1;
+}
 
 sly_lexer_t *
 sly_lexer_new (const char *filename, char *source) {
@@ -175,33 +187,55 @@ scan_number (sly_lexer_t *self, char ch) {
   int f = 1; // factor
   int exponent = 0;
   int is_positive = 1;
+  int is_float = 0;
 
   // they are all ints until we say otherwise
   TOKEN(INT);
 
   switch (ch) {
-    case '0': goto scan_hex;
-    default: goto scan_int;
+    case '0': goto parse_hex;
+    case 'u': goto parse_unicode;
+    case '-': goto parse_exponent;
+    default: goto parse_int;
   }
 
-scan_hex: // @TODO
+parse_hex:
+  TOKEN(HEX);
+  ch = ADVANCE();
+  if ('x' == ch) {
+    if (isxdigit(ch = ADVANCE())) {
+      // thanks to tj
+      do { num = num << 4 | to_hex(ch); }
+      while (isxdigit(ch = ADVANCE()));
+    } else {
+      ERROR("Unexpected");
+      return TOKEN(ILLEGAL);
+    }
+  } else {
+    goto parse_int;
+  }
+  self->token.value.as_int = num;
   return TOKEN(HEX);
 
-scan_int:
-  while (isdigit(ch) || '_' == ch || '.' == ch || 'e' == ch || 'E' == ch) {
-    if ('e' == ch || 'E' == ch) goto scan_exponent;
-    if ('.' == ch) goto scan_float;
-    if ('_' == ch) continue;
+parse_unicode: // @TODO
+  return TOKEN(UNICODE);
+
+parse_int:
+  TOKEN(INT);
+  while (isdigit(ch) || '.' == ch || 'e' == ch || 'E' == ch) {
+    if ('.' == ch) goto parse_float;
+    if ('e' == ch || 'E' == ch) goto parse_exponent;
     num = (num * 10) + (ch - '0');
     ch = ADVANCE();
   }
   self->token.value.as_int = num;
   return TOKEN(INT);
 
-scan_float:
-  while (isdigit(ch = ADVANCE()) || '_' == ch ||
-         '.' == ch || 'e' == ch || 'E' == ch) {
-    if ('e' == ch || 'E' == ch) goto scan_exponent;
+parse_float:
+  TOKEN(FLOAT);
+  is_float = 1;
+  while (isdigit(ch = ADVANCE()) || '.' == ch || 'e' == ch || 'E' == ch) {
+    if ('e' == ch || 'E' == ch) goto parse_exponent;
     num = (num * 10) + (ch - '0');
     f = f * 10;
     ch = ADVANCE();
@@ -209,14 +243,24 @@ scan_float:
   self->token.value.as_float = (float) num / f;
   return TOKEN(FLOAT);
 
-scan_exponent: // @TODO - finish exponents
-  return 1;
+parse_exponent:
   // account for positive and negative exponents
   while (isdigit(ch = ADVANCE()) || '+' == ch || '-' == ch) {
     if ('-' == ch) {
       is_positive = 0;
       continue;
     }
+
+    exponent = (exponent * 10) + (ch - '0');
+  }
+
+  if (!is_positive) {
+    exponent = exponent * -1;
+  }
+  if (is_float) {
+    self->token.value.as_float = pow(10, exponent) * ((float) num / f);
+  } else {
+    self->token.value.as_int = pow(10, exponent) * num;
   }
   return self->token.type;
 }
@@ -294,10 +338,16 @@ scan:
       }
 
     case '-':
-      switch (ADVANCE()) {
+      switch (ch = ADVANCE()) {
         case '-': return TOKEN(OP_DECREMENT);
         case '=': return TOKEN(OP_MINUS_ASSIGN);
-        default: DECREASE(); return TOKEN(OP_MINUS);
+        default:
+          if (isdigit(ch)) {
+            return scan_number(self, ch);
+          } else {
+            ch = DECREASE();
+            return TOKEN(OP_MINUS);
+          }
       }
 
     case '*':
@@ -320,7 +370,7 @@ scan:
         case '=': return TOKEN(OP_GTE);
         case '>':
           switch (ADVANCE()) {
-            case '>': return TOKEN(OP_BITWISE_UNSIGHED_SHIFT_RIGHT);
+            case '>': return TOKEN(OP_BITWISE_UNSIGNED_SHIFT_RIGHT);
             default: DECREASE(); return TOKEN(OP_BITWISE_SHIFT_RIGHT);
           }
 
@@ -340,7 +390,7 @@ scan:
     default:
       if ('_' == ch || isalpha(ch)) return scan_identifier(self, ch);
       if ('.' == ch || isdigit(ch)) return scan_number(self, ch);
-      ERROR("Unexpcted token");
+      ERROR("Unexpected token");
   }
 
   return 0;
