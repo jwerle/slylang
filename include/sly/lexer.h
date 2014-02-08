@@ -20,7 +20,10 @@ typedef struct sly_lexer_s {
   char *source;
   char buf[SLY_LEXER_MAX_BUF_SIZE];
   char last;
+  char curr;
+  char peek;
   off_t offset;
+  size_t length;
   int lineno;
   int col;
   int has_error;
@@ -40,5 +43,11 @@ sly_lexer_scan (sly_lexer_t *);
 
 SLY_EXTERN void
 sly_lexer_reset (sly_lexer_t *);
+
+SLY_EXTERN char
+sly_lexer_next (sly_lexer_t *);
+
+SLY_EXTERN char
+sly_lexer_prev (sly_lexer_t *);
 
 #endif

@@ -160,6 +160,162 @@ TEST(lexer) {
   t(lexer);
   t(SLY_TOKEN_HEX == sly_lexer_scan(lexer));
 
+  lexer = sly_lexer_new("test", "{");
+  t(lexer);
+  t(SLY_TOKEN_LBRACE == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "}");
+  t(lexer);
+  t(SLY_TOKEN_RBRACE == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "[");
+  t(lexer);
+  t(SLY_TOKEN_LBRACKET == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "]");
+  t(lexer);
+  t(SLY_TOKEN_RBRACKET == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "(");
+  t(lexer);
+  t(SLY_TOKEN_LPAREN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ")");
+  t(lexer);
+  t(SLY_TOKEN_RPAREN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ";");
+  t(lexer);
+  t(SLY_TOKEN_SEMICOLON == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ":");
+  t(lexer);
+  t(SLY_TOKEN_COLON == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "?");
+  t(lexer);
+  t(SLY_TOKEN_QMARK == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ",");
+  t(lexer);
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ".");
+  t(lexer);
+  t(SLY_TOKEN_OP_DOT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "!");
+  t(lexer);
+  t(SLY_TOKEN_OP_NEGATE == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "+");
+  t(lexer);
+  t(SLY_TOKEN_OP_PLUS == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "++");
+  t(lexer);
+  t(SLY_TOKEN_OP_INCREMENT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "-");
+  t(lexer);
+  t(SLY_TOKEN_OP_MINUS == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "--");
+  t(lexer);
+  t(SLY_TOKEN_OP_DECREMENT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "*");
+  t(lexer);
+  t(SLY_TOKEN_OP_MULTIPLY == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "/");
+  t(lexer);
+  t(SLY_TOKEN_OP_DIVIDE == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "%");
+  t(lexer);
+  t(SLY_TOKEN_OP_MODULO == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ">");
+  t(lexer);
+  t(SLY_TOKEN_OP_GT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "<");
+  t(lexer);
+  t(SLY_TOKEN_OP_LT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ">=");
+  t(lexer);
+  t(SLY_TOKEN_OP_GTE == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "=<");
+  t(lexer);
+  t(SLY_TOKEN_OP_LTE == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "==");
+  t(lexer);
+  t(SLY_TOKEN_OP_EQ == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "!=");
+  t(lexer);
+  t(SLY_TOKEN_OP_NEQ == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "&&");
+  t(lexer);
+  t(SLY_TOKEN_OP_AND == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "||");
+  t(lexer);
+  t(SLY_TOKEN_OP_OR == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "=");
+  t(lexer);
+  t(SLY_TOKEN_OP_ASSIGN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "+=");
+  t(lexer);
+  t(SLY_TOKEN_OP_PLUS_ASSIGN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "-=");
+  t(lexer);
+  t(SLY_TOKEN_OP_MINUS_ASSIGN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "*=");
+  t(lexer);
+  t(SLY_TOKEN_OP_MULTIPLY_ASSIGN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "/=");
+  t(lexer);
+  t(SLY_TOKEN_OP_DIVIDE_ASSIGN == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "&");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_AND == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "|");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_OR == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "^");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_XOR == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "~");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_NOT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "<<");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_SHIFT_LEFT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ">>");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_SHIFT_RIGHT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", ">>>");
+  t(lexer);
+  t(SLY_TOKEN_OP_BITWISE_UNSIGNED_SHIFT_RIGHT == sly_lexer_scan(lexer));
+
   ok("lexer");
   return 0;
 }

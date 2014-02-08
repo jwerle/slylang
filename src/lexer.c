@@ -33,20 +33,6 @@ to_hex (const char);
   (self->token.type = SLY_TOKEN_##name)          \
 
 /**
- * Advance char pointer in source
- */
-
-#define ADVANCE()                                \
-  (self->last = self->source[self->offset++])    \
-
-/**
- * Descrease char pointer in source
- */
-
-#define DECREASE()                               \
-  (self->source[--self->offset] = self->last)    \
-
-/**
  * Sets error message and current token
  * to `SLY_TOKEN_ILLEGAL'
  */
@@ -57,6 +43,7 @@ to_hex (const char);
 }                                                \
 
 #define EQ(a,b) (0 == strcmp(a,b))
+
 
 static int
 to_hex (const char ch) {
@@ -76,6 +63,32 @@ sly_lexer_new (const char *filename, char *source) {
   return self;
 }
 
+char
+sly_lexer_next (sly_lexer_t *self) {
+  char ch = self->source[self->offset];
+  if (self->offset < self->length) {
+    self->col++;
+    self->offset++;
+    self->last = self->curr;
+    self->curr = ch;
+    self->peek = self->source[self->offset];
+  }
+  return ch;
+}
+
+char
+sly_lexer_prev (sly_lexer_t *self) {
+  char ch = self->source[0];
+  if (self->offset > 0) {
+    ch = self->source[--self->offset];
+    self->col--;
+    self->last = self->curr;
+    self->curr = ch;
+    self->peek = self->source[self->offset + 1];
+  }
+  return ch;
+}
+
 static int
 scan_identifier (sly_lexer_t *self, char ch) {
   char buf[256];
@@ -83,7 +96,7 @@ scan_identifier (sly_lexer_t *self, char ch) {
   // looking for identifiers
   TOKEN(IDENTIFIER);
   buf[len++] = ch;
-  while (isalpha(ch = ADVANCE()) || isdigit(ch) || '_' == ch) {
+  while (isalpha(ch = sly_lexer_next(self)) || isdigit(ch) || '_' == ch) {
     buf[len++] = ch;
   }
   buf[len] = '\0';
@@ -152,11 +165,11 @@ scan_string (sly_lexer_t *self, char ch) {
   int len = 0;
   // looking or string parts
   TOKEN(STRING);
-  while (orig != (ch = ADVANCE())) {
+  while (orig != (ch = sly_lexer_next(self))) {
     switch (ch) {
       case '\n': self->lineno++; break;
       case '\\':
-        switch ((ch = ADVANCE())) {
+        switch ((ch = sly_lexer_next(self))) {
           case 'n': ch = '\n'; break;
           case 'r': ch = '\r'; break;
           case 't': ch = '\t'; break;
@@ -201,9 +214,9 @@ scan_number (sly_lexer_t *self, char ch) {
 
 parse_hex:
   TOKEN(HEX);
-  ch = ADVANCE();
+  ch = sly_lexer_next(self);
   if ('x' == ch) {
-    if (isxdigit(ch = ADVANCE())) {
+    if (isxdigit(ch = sly_lexer_next(self))) {
       // thanks to tj
       do {
         if (!isxdigit(ch)) {
@@ -211,7 +224,7 @@ parse_hex:
           return TOKEN(ILLEGAL);
         }
         num = num << 4 | to_hex(ch);
-      } while ((ch = ADVANCE()));
+      } while ((ch = sly_lexer_next(self)));
     } else {
       ERROR("Unexpected");
       return TOKEN(ILLEGAL);
@@ -231,7 +244,7 @@ parse_int:
     if ('.' == ch) goto parse_float;
     if ('e' == ch || 'E' == ch) goto parse_exponent;
     num = (num * 10) + (ch - '0');
-    ch = ADVANCE();
+    ch = sly_lexer_next(self);
   }
   self->token.value.as_int = num;
   return TOKEN(INT);
@@ -239,18 +252,18 @@ parse_int:
 parse_float:
   TOKEN(FLOAT);
   is_float = 1;
-  while (isdigit(ch = ADVANCE()) || '.' == ch || 'e' == ch || 'E' == ch) {
+  while (isdigit(ch = sly_lexer_next(self)) || '.' == ch || 'e' == ch || 'E' == ch) {
     if ('e' == ch || 'E' == ch) goto parse_exponent;
     num = (num * 10) + (ch - '0');
     f = f * 10;
-    ch = ADVANCE();
+    ch = sly_lexer_next(self);
   }
   self->token.value.as_float = (float) num / f;
   return TOKEN(FLOAT);
 
 parse_exponent:
   // account for positive and negative exponents
-  while (isdigit(ch = ADVANCE()) || '+' == ch || '-' == ch) {
+  while (isdigit(ch = sly_lexer_next(self)) || '+' == ch || '-' == ch) {
     if ('-' == ch) {
       is_positive = 0;
       continue;
@@ -278,7 +291,7 @@ sly_lexer_scan (sly_lexer_t *self) {
   TOKEN(ILLEGAL);
 
 scan:
-  switch (ch = ADVANCE()) {
+  switch (ch = sly_lexer_next(self)) {
     // whitespace
     case ' ': case '\t':
       goto scan;
@@ -312,87 +325,106 @@ scan:
     case '^': return TOKEN(OP_BITWISE_XOR);
 
     case '!':
-      switch (ADVANCE()) {
+      switch (ch = sly_lexer_next(self)) {
         case '=': return TOKEN(OP_NEQ);
-        default: DECREASE(); return TOKEN(OP_NEGATE);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_NEGATE);
       }
 
     case '=':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
+        case '<': return TOKEN(OP_LTE);
         case '=': return TOKEN(OP_EQ);
-        default: DECREASE(); return TOKEN(OP_ASSIGN);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_ASSIGN);
       }
 
     case '&':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
         case '&': return TOKEN(OP_AND);
-        default: DECREASE(); return TOKEN(OP_BITWISE_AND);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_BITWISE_AND);
       }
 
     case '|':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
         case '|': return TOKEN(OP_OR);
-        default: DECREASE(); return TOKEN(OP_BITWISE_OR);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_BITWISE_OR);
       }
 
     case '+':
-      switch (ch = ADVANCE()) {
+      switch (ch = sly_lexer_next(self)) {
         case '+': return TOKEN(OP_INCREMENT);
         case '=': return TOKEN(OP_PLUS_ASSIGN);
         default:
           if (isdigit(ch)) {
             return scan_number(self, ch);
           } else {
-            ch = DECREASE();
+            sly_lexer_prev(self);
             return TOKEN(OP_PLUS);
           }
       }
 
     case '-':
-      switch (ch = ADVANCE()) {
+      switch (ch = sly_lexer_next(self)) {
         case '-': return TOKEN(OP_DECREMENT);
         case '=': return TOKEN(OP_MINUS_ASSIGN);
         default:
           if (isdigit(ch)) {
             return scan_number(self, ch);
           } else {
-            ch = DECREASE();
+            sly_lexer_prev(self);
             return TOKEN(OP_MINUS);
           }
       }
 
     case '*':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
         case '=': return TOKEN(OP_MULTIPLY_ASSIGN);
-        default: DECREASE(); return TOKEN(OP_MULTIPLY);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_MULTIPLY);
       }
 
     case '/':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
         case '=': return TOKEN(OP_DIVIDE_ASSIGN);
         case '/':
-           while ('\n' != (ch = ADVANCE()) && ch) ; DECREASE();
+           while ('\n' != (ch = sly_lexer_next(self)) && ch) ; sly_lexer_prev(self);
            goto scan;
-        default: DECREASE(); return TOKEN(OP_DIVIDE);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_DIVIDE);
       }
 
     case '>':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
         case '=': return TOKEN(OP_GTE);
         case '>':
-          switch (ADVANCE()) {
+          switch (sly_lexer_next(self)) {
             case '>': return TOKEN(OP_BITWISE_UNSIGNED_SHIFT_RIGHT);
-            default: DECREASE(); return TOKEN(OP_BITWISE_SHIFT_RIGHT);
+            default:
+              sly_lexer_prev(self);
+              return TOKEN(OP_BITWISE_SHIFT_RIGHT);
           }
 
-        default: DECREASE(); return TOKEN(OP_GT);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_GT);
       }
 
     case '<':
-      switch (ADVANCE()) {
+      switch (sly_lexer_next(self)) {
         case '=': return TOKEN(OP_LTE);
         case '<': return TOKEN(OP_BITWISE_SHIFT_LEFT);
-        default: DECREASE(); return TOKEN(OP_LT);
+        default:
+          sly_lexer_prev(self);
+          return TOKEN(OP_LT);
       }
 
     case 0:
@@ -404,7 +436,7 @@ scan:
       ERROR("Unexpected token");
   }
 
-  return 0;
+  return TOKEN(ILLEGAL);
 }
 
 void
@@ -414,4 +446,5 @@ sly_lexer_reset (sly_lexer_t *self) {
   self->col = 1;
   self->offset = 0;
   self->last = 0;
+  self->length = strlen(self->source);
 }
