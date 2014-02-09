@@ -5,6 +5,7 @@
  * copyright (c) 2014 - joseph werle <joseph.werle@gmail.com>
  */
 
+#include <string.h>
 #include <sly/test.h>
 #include <sly/lexer.h>
 #include <ok.h>
@@ -315,6 +316,191 @@ TEST(lexer) {
   lexer = sly_lexer_new("test", ">>>");
   t(lexer);
   t(SLY_TOKEN_OP_BITWISE_UNSIGNED_SHIFT_RIGHT == sly_lexer_scan(lexer));
+
+  lexer = sly_lexer_new("test", "\n"
+      "define CONSTANT 0x40\n"
+      "\n"
+      "let export main (argc, argv) {"
+        "var nums = [0, 1,2, 3,4,5, 0.64, one, two, 0xff];"
+        "var a = 32 >> 8;"
+        "var b = 0;"
+        "b |= a;"
+        "return 0;"
+      "}"
+  "");
+
+  t(lexer);
+
+  t(SLY_TOKEN_DEFINE == sly_lexer_scan(lexer));
+  t(0 == strcmp("define", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("CONSTANT", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_HEX == sly_lexer_scan(lexer));
+  t(0 == strcmp("0x40", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_LET == sly_lexer_scan(lexer));
+  t(0 == strcmp("let", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_EXPORT == sly_lexer_scan(lexer));
+  t(0 == strcmp("export", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("main", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_LPAREN == sly_lexer_scan(lexer));
+  t(0 == strcmp("(", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("argc", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("argv", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_RPAREN == sly_lexer_scan(lexer));
+  t(0 == strcmp(")", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_LBRACE == sly_lexer_scan(lexer));
+  t(0 == strcmp("{", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_VAR == sly_lexer_scan(lexer));
+  t(0 == strcmp("var", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("nums", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_OP_ASSIGN == sly_lexer_scan(lexer));
+  t(0 == strcmp("=", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_LBRACKET == sly_lexer_scan(lexer));
+  t(0 == strcmp("[", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("0", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("1", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("2", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("3", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("4", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("5", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_FLOAT == sly_lexer_scan(lexer));
+  t(0 == strcmp("0.64", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("one", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("two", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_COMMA == sly_lexer_scan(lexer));
+  t(0 == strcmp(",", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_HEX == sly_lexer_scan(lexer));
+  t(0 == strcmp("0xff", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_RBRACKET == sly_lexer_scan(lexer));
+  t(0 == strcmp("]", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_SEMICOLON == sly_lexer_scan(lexer));
+  t(0 == strcmp(";", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_VAR == sly_lexer_scan(lexer));
+  t(0 == strcmp("var", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("a", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_OP_ASSIGN == sly_lexer_scan(lexer));
+  t(0 == strcmp("=", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("32", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_OP_BITWISE_SHIFT_RIGHT == sly_lexer_scan(lexer));
+  t(0 == strcmp(">>", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("8", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_SEMICOLON == sly_lexer_scan(lexer));
+  t(0 == strcmp(";", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_VAR == sly_lexer_scan(lexer));
+  t(0 == strcmp("var", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("b", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_OP_ASSIGN == sly_lexer_scan(lexer));
+  t(0 == strcmp("=", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("0", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_SEMICOLON == sly_lexer_scan(lexer));
+  t(0 == strcmp(";", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("b", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_OP_BITWISE_OR_ASSIGN == sly_lexer_scan(lexer));
+  t(0 == strcmp("|=", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_IDENTIFIER == sly_lexer_scan(lexer));
+  t(0 == strcmp("a", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_SEMICOLON == sly_lexer_scan(lexer));
+  t(0 == strcmp(";", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_RETURN == sly_lexer_scan(lexer));
+  t(0 == strcmp("return", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_INT == sly_lexer_scan(lexer));
+  t(0 == strcmp("0", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_SEMICOLON == sly_lexer_scan(lexer));
+  t(0 == strcmp(";", lexer->token.value.as_string));
+
+  t(SLY_TOKEN_RBRACE == sly_lexer_scan(lexer));
+  t(0 == strcmp("}", lexer->token.value.as_string));
 
   ok("lexer");
   return 0;
